@@ -77,12 +77,15 @@ def compute_color_feature_matrix(file_list, N, ch, cs, cv):
         
     return m
         
-def load_matrices(file_list):
+def load_matrices(file_list, only_F1=True):
     try:
         F1 = np.load("F1.npy")
     except IOError:
         F1 = compute_color_feature_matrix(file_list,1,10,10,10)
         np.save("F1",F1)
+        
+    if only_F1:
+        return F1
     try:
         F2 = np.load("F2.npy")
     except IOError:
@@ -117,12 +120,10 @@ def classify_color_feature(F,y):
 if __name__ == "__main__":
     file_list = list_train_images(5000) 
     
-    F1,F2,F3 = load_matrices(file_list)
+    F1 = load_matrices(file_list)
     
     y = compute_labels(file_list)
     
     classify_color_feature(F1,y)
-    classify_color_feature(F2,y)
-    classify_color_feature(F3,y)
     
     
