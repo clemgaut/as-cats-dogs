@@ -14,6 +14,8 @@ from skimage import color
 from sklearn import cross_validation
 from sklearn import svm
 
+import matplotlib.pyplot as plt
+
 import glob
 
 
@@ -22,6 +24,7 @@ def list_train_images(n=1000):
     List n training images chosen at random.
     """
     image_filenames = glob.glob("./train/*.jpg")
+    
     image_filenames.sort()
     random.seed(42)
     random.shuffle(image_filenames)
@@ -110,20 +113,33 @@ def compute_labels(file_list):
             
     return lbl
     
-def classify_color_feature(F,y):
+def classify_color_feature(F,y, clf):
     start = time.time()
-    clf = svm.SVC(kernel='rbf',gamma=0.001)
     scores = cross_validation.cross_val_score(clf, F, y, cv=5) 
     time_diff = time.time() - start 
     print "Accuracy: %.1f  +- %.1f   (calculated in %.1f seconds)"   % (np.mean(scores)*100,np.std(scores)*100,time_diff)
     
+    return np.mean(scores), np.std(scores), time_diff
+    
 if __name__ == "__main__":
-    file_list = list_train_images(5000) 
+    file_list = list_train_images(5000)
     
     F1 = load_matrices(file_list)
     
     y = compute_labels(file_list)
+
+    gamma_v = [0.001, 0.01, 0.1]
     
-    classify_color_feature(F1,y)
+    time_d = []
+    mean = []
+    std = []
+    
+    for g in gamma_v:
+        m, s, t = classify_color_feature(F1,y, svm.SVC(kernel='rbf',gamma=g))
+        time_d.append(t)
+        mean.append(m)
+        std.append(s)
+        
+    plt.plot(gamma_v, mean, 'ro')
     
     
