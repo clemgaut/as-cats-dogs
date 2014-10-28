@@ -128,7 +128,7 @@ if __name__ == "__main__":
     
     y = compute_labels(file_list)
 
-    gamma_v = [0.001, 0.01, 0.1]
+    gamma_v = [pow(10, -t) for t in range(5)]
     
     time_d = []
     mean = []
@@ -139,7 +139,17 @@ if __name__ == "__main__":
         time_d.append(t)
         mean.append(m)
         std.append(s)
-        
-    plt.plot(gamma_v, mean, 'ro')
+    
+    #Create a plot showing the performances for different gamma    
+    fig = plt.figure()
+    
+    ax = fig.add_subplot(1,1,1)
+    ax.set_xscale('log')
+    ax.set_xlabel("Gamma value")
+    ax.set_ylabel("Mean score")
+    
+    ax.plot(gamma_v, mean, 'ro')
+    
+    fig.savefig("gamma.png")
     
     
