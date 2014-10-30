@@ -12,7 +12,7 @@ from skimage import io
 from skimage import color
 
 from sklearn import cross_validation
-from sklearn import svm
+from sklearn import svm, neighbors
 
 import matplotlib.pyplot as plt
 
@@ -127,29 +127,62 @@ if __name__ == "__main__":
     F1 = load_matrices(file_list)
     
     y = compute_labels(file_list)
+    
+    bench_svm_rbf = False
+    bench_knn = True
 
-    gamma_v = [pow(10, -t) for t in range(5)]
+    ####################
+    # First benchmark with SVM rbf kernel
+    ####################
+    if bench_svm_rbf:
+        gamma_v = [pow(10, -t) for t in range(5)]
+        
+        time_d = []
+        mean = []
+        std = []
+        
+        for g in gamma_v:
+            m, s, t = classify_color_feature(F1,y, svm.SVC(kernel='rbf',gamma=g))
+            time_d.append(t)
+            mean.append(m)
+            std.append(s)
+        
+        #Create a plot showing the performances for different gamma    
+        fig = plt.figure()
+        
+        ax = fig.add_subplot(1,1,1)
+        ax.set_xscale('log')
+        ax.set_xlabel("Gamma value")
+        ax.set_ylabel("Mean score")
+        
+        ax.plot(gamma_v, mean, 'ro')
+        
+        fig.savefig("gamma.png")
     
-    time_d = []
-    mean = []
-    std = []
-    
-    for g in gamma_v:
-        m, s, t = classify_color_feature(F1,y, svm.SVC(kernel='rbf',gamma=g))
-        time_d.append(t)
-        mean.append(m)
-        std.append(s)
-    
-    #Create a plot showing the performances for different gamma    
-    fig = plt.figure()
-    
-    ax = fig.add_subplot(1,1,1)
-    ax.set_xscale('log')
-    ax.set_xlabel("Gamma value")
-    ax.set_ylabel("Mean score")
-    
-    ax.plot(gamma_v, mean, 'ro')
-    
-    fig.savefig("gamma.png")
-    
+    ####################
+    # Second benchmark with k-NN
+    ####################
+    if bench_knn:
+        k_values = [1,3,5,7,9,11]
+        time_d = []
+        mean = []
+        std = []
+            
+        for k in k_values:
+            m, s, t = classify_color_feature(F1,y, neighbors.KNeighborsClassifier(n_neighbors=k))
+            
+            time_d.append(t)
+            mean.append(m)
+            std.append(s)
+            
+        #Create a plot showing the performances for different k    
+        fig = plt.figure()
+        
+        ax = fig.add_subplot(1,1,1)
+        ax.set_xlabel("K value")
+        ax.set_ylabel("Mean score")
+        
+        ax.plot(k_values, mean, 'ro')
+        
+        fig.savefig("knn.png")
     
