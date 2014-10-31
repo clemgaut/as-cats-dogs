@@ -12,7 +12,7 @@ from skimage import io
 from skimage import color
 
 from sklearn import cross_validation
-from sklearn import svm, neighbors
+from sklearn import svm, neighbors, ensemble
 
 import matplotlib.pyplot as plt
 
@@ -128,8 +128,9 @@ if __name__ == "__main__":
     
     y = compute_labels(file_list)
     
-    bench_svm_rbf = False
+    bench_svm_rbf = True
     bench_knn = True
+    bench_forest = True
 
     ####################
     # First benchmark with SVM rbf kernel
@@ -154,6 +155,7 @@ if __name__ == "__main__":
         ax.set_xscale('log')
         ax.set_xlabel("Gamma value")
         ax.set_ylabel("Mean score")
+        ax.set_ylim([0,1])
         
         ax.plot(gamma_v, mean, 'ro')
         
@@ -181,8 +183,36 @@ if __name__ == "__main__":
         ax = fig.add_subplot(1,1,1)
         ax.set_xlabel("K value")
         ax.set_ylabel("Mean score")
+        ax.set_ylim([0,1])
         
         ax.plot(k_values, mean, 'ro')
         
         fig.savefig("knn.png")
     
+    ####################
+    # Third benchmark with random forest
+    ####################
+    if bench_forest:
+        n_values = [10, 100, 500]
+        time_d = []
+        mean = []
+        std = []
+        
+        for n in n_values:
+            m, s, t = classify_color_feature(F1,y,ensemble.RandomForestClassifier(n_estimators=n))
+            
+            time_d.append(t)
+            mean.append(m)
+            std.append(s)
+            
+        #Create a plot showing the performances for different n    
+        fig = plt.figure()
+        
+        ax = fig.add_subplot(1,1,1)
+        ax.set_xlabel("estimators value")
+        ax.set_ylabel("Mean score")
+        ax.set_ylim([0,1])
+        
+        ax.plot(n_values, mean, 'ro')
+        
+        fig.savefig("random_forest.png")
